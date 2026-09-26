@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id-ID">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundText - Interactive Audio Spectrum & Lirik Sinkron</title>
+    <meta name="description" content="Visualizer spektrum audio interaktif dengan sinkronisasi lirik lagu berbasis JSON secara real-time. Nikmati pengalaman pemutar musik futuristik.">
+    <meta name="keywords" content="audio visualizer, lirik sinkron, pemutar mp3, web audio API, soundtext, lirik json">
+    <meta name="author" content="SoundText Studio">
+    <link rel="icon" type="image/png" href="soundtext.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://spanelweb.github.io/soundtext">
+    <meta property="og:title" content="SoundText - Interactive Audio Spectrum & Lirik Sinkron">
+    <meta property="og:description" content="Visualizer spektrum audio interaktif dengan sinkronisasi lirik lagu berbasis JSON secara real-time.">
+    <meta property="og:image" content="soundtext.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SoundText - Interactive Audio Spectrum & Lirik Sinkron">
+    <meta name="twitter:description" content="Visualizer spektrum audio interaktif dengan sinkronisasi lirik lagu berbasis JSON secara real-time.">
+    <meta name="twitter:image" content="soundtext.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div class="viewport-container">
+        <div class="subtitle">SoundText by Suryo Dwijayanto</div>
+
+        <button class="btn btn-settings-toggle" id="btnSettings" title="Pengaturan Spektrum">
+            <i class="fas fa-sliders"></i>
+        </button>
+
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <span><i class="fas fa-gear"></i> Pengaturan Visual</span>
+                <i class="fas fa-times" id="btnCloseSettings" style="cursor: pointer;"></i>
+            </div>
+
+            <div class="setting-group">
+                <label>Tipe Warna Spektrum</label>
+                <select id="colorModeSelect">
+                    <option value="gradient">Gradient Warna-Warni (Rainbow)</option>
+                    <option value="solid">Satu Warna (Solid Color)</option>
+                    <option value="neon">Neon Cyberpunk</option>
+                    <option value="gold">Warm Gold & Fire</option>
+                </select>
+            </div>
+
+            <div class="setting-group" id="solidColorGroup" style="display: none;">
+                <label>Pilih Warna Utama</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="solidColorInput" value="#45f3ff">
+                    <span id="colorHexText" style="font-size: 0.8rem; color:#aaa;">#45f3ff</span>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>Gaya Visual Spektrum</label>
+                <select id="visualStyleSelect">
+                    <option value="textWave">Gelombang Teks (Text Wave Distortion)</option>
+                    <option value="textBars">Garis Spektrum Teks (Text Bar Lines)</option>
+                    <option value="hybrid">Satu Garis Spektrum & Teks (Wavefront)</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label>Sensitivitas Tinggi Gelombang <span class="val" id="sensVal">1.5x</span></label>
+                <input type="range" id="sensitivityRange" min="0.5" max="3.5" step="0.1" value="1.5">
+            </div>
+
+            <div class="setting-group">
+                <label>Kecepatan Animasi Wave <span class="val" id="speedVal">1.0x</span></label>
+                <input type="range" id="speedRange" min="0.2" max="3.0" step="0.1" value="1.0">
+            </div>
+        </div>
+
+        <canvas id="visualizerCanvas"></canvas>
+
+        <div class="controls-bar">
+            <button class="btn" id="btnPlayPause" title="Play / Pause">
+                <i class="fas fa-play" id="playIcon"></i>
+            </button>
+
+            <div class="upload-group">
+                <button class="btn btn-upload" id="btnUploadLyrics">
+                    <i class="fas fa-file-code"></i>
+                    <span>Pilih JSON Lirik</span>
+                </button>
+                <input type="file" id="lyricsInput" accept=".json" style="display: none;">
+
+                <button class="btn btn-upload" id="btnUploadAudio" disabled>
+                    <i class="fas fa-music"></i>
+                    <span>Pilih MP3</span>
+                </button>
+                <input type="file" id="audioInput" accept="audio/*" style="display: none;">
+            </div>
+
+            <div class="track-info" id="trackTitle">Unggah lirik JSON dulu</div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
