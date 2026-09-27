@@ -2,7 +2,6 @@
     27 September 2026
     Suryo DwiJayanto
 */
-
 * {
     margin: 0;
     padding: 0;
@@ -95,7 +94,6 @@ body, html {
     gap: 8px;
 }
 
-/* Styling saat tombol disable */
 .btn-upload:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -132,8 +130,8 @@ body, html {
     top: 80px;
     right: 25px;
     z-index: 12;
-    width: 310px;
-    background: rgba(15, 18, 26, 0.85);
+    width: 330px;
+    background: rgba(15, 18, 26, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -141,7 +139,7 @@ body, html {
     padding: 22px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px) scale(0.95);
@@ -166,10 +164,60 @@ body, html {
     color: #45f3ff;
 }
 
+/* Tab Navigation di dalam Settings */
+.settings-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 3px;
+    gap: 4px;
+}
+
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #a0a5b5;
+    padding: 8px 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.tab-btn.active {
+    background: #45f3ff;
+    color: #0b0c10;
+    box-shadow: 0 0 12px rgba(69, 243, 255, 0.4);
+}
+
+.tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.tab-content::-webkit-scrollbar {
+    width: 4px;
+}
+.tab-content::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
 .setting-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .setting-group label {
