@@ -37,13 +37,11 @@
                 <i class="fas fa-times" id="btnCloseSettings" style="cursor: pointer;"></i>
             </div>
 
-            <!-- Tab Navigation Header -->
             <div class="settings-tabs">
                 <button class="tab-btn active" data-tab="visualTab">Visual</button>
                 <button class="tab-btn" data-tab="eqTab">Equalizer</button>
             </div>
 
-            <!-- Tab 1: Visual Settings -->
             <div class="tab-content active" id="visualTab">
                 <div class="setting-group">
                     <label>Tipe Warna Spektrum</label>
@@ -69,6 +67,9 @@
                         <option value="textWave">Gelombang Teks (Text Wave Distortion)</option>
                         <option value="textBars">Garis Spektrum Teks (Text Bar Lines)</option>
                         <option value="hybrid">Satu Garis Spektrum & Teks (Wavefront)</option>
+                        <option value="circleBars">Lingkaran Spektrum Radial (Circular Spectrum)</option>
+                        <option value="matrixRain">Hujan Digital Matriks (Matrix Audio Rain)</option>
+                        <option value="particles">Ledakan Partikel Audio (Audio Particles)</option>
                     </select>
                 </div>
 
@@ -83,7 +84,6 @@
                 </div>
             </div>
 
-            <!-- Tab 2: Equalizer Settings -->
             <div class="tab-content" id="eqTab">
                 <div class="setting-group">
                     <label>Low Bass (60 Hz) <span class="val" id="eqLowVal">0 dB</span></label>
@@ -120,14 +120,12 @@
             </button>
 
             <div class="upload-group">
-                <!-- Tombol Upload Lirik (Aktif Duluan) -->
                 <button class="btn btn-upload" id="btnUploadLyrics">
                     <i class="fas fa-file-code"></i>
                     <span>Pilih JSON Lirik</span>
                 </button>
                 <input type="file" id="lyricsInput" accept=".json" style="display: none;">
 
-                <!-- Tombol Upload MP3 (Disable sebelum lirik diunggah) -->
                 <button class="btn btn-upload" id="btnUploadAudio" disabled>
                     <i class="fas fa-music"></i>
                     <span>Pilih MP3</span>
