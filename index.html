@@ -27,51 +27,88 @@
     <div class="viewport-container">
         <div class="subtitle">SoundText by Suryo Dwijayanto</div>
 
-        <button class="btn btn-settings-toggle" id="btnSettings" title="Pengaturan Spektrum">
+        <button class="btn btn-settings-toggle" id="btnSettings" title="Pengaturan Spektrum & EQ">
             <i class="fas fa-sliders"></i>
         </button>
 
         <div class="settings-panel" id="settingsPanel">
             <div class="settings-header">
-                <span><i class="fas fa-gear"></i> Pengaturan Visual</span>
+                <span><i class="fas fa-gear"></i> Control Center</span>
                 <i class="fas fa-times" id="btnCloseSettings" style="cursor: pointer;"></i>
             </div>
 
-            <div class="setting-group">
-                <label>Tipe Warna Spektrum</label>
-                <select id="colorModeSelect">
-                    <option value="gradient">Gradient Warna-Warni (Rainbow)</option>
-                    <option value="solid">Satu Warna (Solid Color)</option>
-                    <option value="neon">Neon Cyberpunk</option>
-                    <option value="gold">Warm Gold & Fire</option>
-                </select>
+            <!-- Tab Navigation Header -->
+            <div class="settings-tabs">
+                <button class="tab-btn active" data-tab="visualTab">Visual</button>
+                <button class="tab-btn" data-tab="eqTab">Equalizer</button>
             </div>
 
-            <div class="setting-group" id="solidColorGroup" style="display: none;">
-                <label>Pilih Warna Utama</label>
-                <div class="color-picker-wrapper">
-                    <input type="color" id="solidColorInput" value="#45f3ff">
-                    <span id="colorHexText" style="font-size: 0.8rem; color:#aaa;">#45f3ff</span>
+            <!-- Tab 1: Visual Settings -->
+            <div class="tab-content active" id="visualTab">
+                <div class="setting-group">
+                    <label>Tipe Warna Spektrum</label>
+                    <select id="colorModeSelect">
+                        <option value="gradient">Gradient Warna-Warni (Rainbow)</option>
+                        <option value="solid">Satu Warna (Solid Color)</option>
+                        <option value="neon">Neon Cyberpunk</option>
+                        <option value="gold">Warm Gold & Fire</option>
+                    </select>
+                </div>
+
+                <div class="setting-group" id="solidColorGroup" style="display: none;">
+                    <label>Pilih Warna Utama</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="solidColorInput" value="#45f3ff">
+                        <span id="colorHexText" style="font-size: 0.8rem; color:#aaa;">#45f3ff</span>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label>Gaya Visual Spektrum</label>
+                    <select id="visualStyleSelect">
+                        <option value="textWave">Gelombang Teks (Text Wave Distortion)</option>
+                        <option value="textBars">Garis Spektrum Teks (Text Bar Lines)</option>
+                        <option value="hybrid">Satu Garis Spektrum & Teks (Wavefront)</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label>Sensitivitas Tinggi Gelombang <span class="val" id="sensVal">1.5x</span></label>
+                    <input type="range" id="sensitivityRange" min="0.5" max="3.5" step="0.1" value="1.5">
+                </div>
+
+                <div class="setting-group">
+                    <label>Kecepatan Animasi Wave <span class="val" id="speedVal">1.0x</span></label>
+                    <input type="range" id="speedRange" min="0.2" max="3.0" step="0.1" value="1.0">
                 </div>
             </div>
 
-            <div class="setting-group">
-                <label>Gaya Visual Spektrum</label>
-                <select id="visualStyleSelect">
-                    <option value="textWave">Gelombang Teks (Text Wave Distortion)</option>
-                    <option value="textBars">Garis Spektrum Teks (Text Bar Lines)</option>
-                    <option value="hybrid">Satu Garis Spektrum & Teks (Wavefront)</option>
-                </select>
-            </div>
+            <!-- Tab 2: Equalizer Settings -->
+            <div class="tab-content" id="eqTab">
+                <div class="setting-group">
+                    <label>Low Bass (60 Hz) <span class="val" id="eqLowVal">0 dB</span></label>
+                    <input type="range" class="eq-slider" data-index="0" min="-20" max="20" step="1" value="0">
+                </div>
 
-            <div class="setting-group">
-                <label>Sensitivitas Tinggi Gelombang <span class="val" id="sensVal">1.5x</span></label>
-                <input type="range" id="sensitivityRange" min="0.5" max="3.5" step="0.1" value="1.5">
-            </div>
+                <div class="setting-group">
+                    <label>Mid Bass (230 Hz) <span class="val" id="eqMidLowVal">0 dB</span></label>
+                    <input type="range" class="eq-slider" data-index="1" min="-20" max="20" step="1" value="0">
+                </div>
 
-            <div class="setting-group">
-                <label>Kecepatan Animasi Wave <span class="val" id="speedVal">1.0x</span></label>
-                <input type="range" id="speedRange" min="0.2" max="3.0" step="0.1" value="1.0">
+                <div class="setting-group">
+                    <label>Midrange (910 Hz) <span class="val" id="eqMidVal">0 dB</span></label>
+                    <input type="range" class="eq-slider" data-index="2" min="-20" max="20" step="1" value="0">
+                </div>
+
+                <div class="setting-group">
+                    <label>Upper Mid (3.6 kHz) <span class="val" id="eqMidHighVal">0 dB</span></label>
+                    <input type="range" class="eq-slider" data-index="3" min="-20" max="20" step="1" value="0">
+                </div>
+
+                <div class="setting-group">
+                    <label>Treble / High (14 kHz) <span class="val" id="eqHighVal">0 dB</span></label>
+                    <input type="range" class="eq-slider" data-index="4" min="-20" max="20" step="1" value="0">
+                </div>
             </div>
         </div>
 
@@ -83,12 +120,14 @@
             </button>
 
             <div class="upload-group">
+                <!-- Tombol Upload Lirik (Aktif Duluan) -->
                 <button class="btn btn-upload" id="btnUploadLyrics">
                     <i class="fas fa-file-code"></i>
                     <span>Pilih JSON Lirik</span>
                 </button>
                 <input type="file" id="lyricsInput" accept=".json" style="display: none;">
 
+                <!-- Tombol Upload MP3 (Disable sebelum lirik diunggah) -->
                 <button class="btn btn-upload" id="btnUploadAudio" disabled>
                     <i class="fas fa-music"></i>
                     <span>Pilih MP3</span>
