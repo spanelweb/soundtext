@@ -2,15 +2,14 @@
     27 September 2026
     Suryo DwiJayanto
 */
-
 const state = {
     audioCtx: null,
     analyser: null,
     audioSource: null,
     audioElement: null,
+    eqFilters: [],
     isPlaying: false,
     isDemo: true,
-    demoPhase: 0,
     
     // Settings Parameters
     text: "Silakan Unggah JSON Lirik",
@@ -38,6 +37,23 @@ resizeCanvas();
 const btnSettings = document.getElementById('btnSettings');
 const btnCloseSettings = document.getElementById('btnCloseSettings');
 const settingsPanel = document.getElementById('settingsPanel');
+
+// Tab system logic
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+
+tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+    });
+});
+
+btnSettings.addEventListener('click', () => settingsPanel.classList.toggle('active'));
+btnCloseSettings.addEventListener('click', () => settingsPanel.classList.remove('active'));
+
 const colorModeSelect = document.getElementById('colorModeSelect');
 const solidColorGroup = document.getElementById('solidColorGroup');
 const solidColorInput = document.getElementById('solidColorInput');
@@ -47,9 +63,6 @@ const sensitivityRange = document.getElementById('sensitivityRange');
 const sensVal = document.getElementById('sensVal');
 const speedRange = document.getElementById('speedRange');
 const speedVal = document.getElementById('speedVal');
-
-btnSettings.addEventListener('click', () => settingsPanel.classList.toggle('active'));
-btnCloseSettings.addEventListener('click', () => settingsPanel.classList.remove('active'));
 
 colorModeSelect.addEventListener('change', (e) => {
     state.colorMode = e.target.value;
@@ -75,6 +88,26 @@ speedRange.addEventListener('input', (e) => {
     speedVal.textContent = `${state.speed.toFixed(1)}x`;
 });
 
+// Equalizer Sliders Handling
+const eqSliders = document.querySelectorAll('.eq-slider');
+const eqValElements = [
+    document.getElementById('eqLowVal'),
+    document.getElementById('eqMidLowVal'),
+    document.getElementById('eqMidVal'),
+    document.getElementById('eqMidHighVal'),
+    document.getElementById('eqHighVal')
+];
+
+eqSliders.forEach((slider, idx) => {
+    slider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        eqValElements[idx].textContent = `${val > 0 ? '+' : ''}${val} dB`;
+        if (state.eqFilters[idx]) {
+            state.eqFilters[idx].gain.value = val;
+        }
+    });
+});
+
 const btnPlayPause = document.getElementById('btnPlayPause');
 const playIcon = document.getElementById('playIcon');
 const btnUploadAudio = document.getElementById('btnUploadAudio');
@@ -87,10 +120,22 @@ function initAudioContext() {
     if (!state.audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         state.audioCtx = new AudioContext();
+        
         state.analyser = state.audioCtx.createAnalyser();
         state.analyser.fftSize = 256;
         state.bufferLength = state.analyser.frequencyBinCount;
         state.dataArray = new Uint8Array(state.bufferLength);
+
+        // Setup 5-Band Equalizer filters (BiquadFilterNode)
+        const frequencies = [60, 230, 910, 3600, 14000];
+        state.eqFilters = frequencies.map((freq, i) => {
+            const filter = state.audioCtx.createBiquadFilter();
+            filter.type = i === 0 ? 'lowshelf' : (i === frequencies.length - 1 ? 'highshelf' : 'peaking');
+            filter.frequency.value = freq;
+            filter.gain.value = parseFloat(eqSliders[i].value);
+            if (filter.type === 'peaking') filter.Q.value = 1.0;
+            return filter;
+        });
     }
     if (state.audioCtx.state === 'suspended') {
         state.audioCtx.resume();
@@ -98,7 +143,7 @@ function initAudioContext() {
 }
 
 btnPlayPause.addEventListener('click', () => {
-    if (state.isDemo) return; // Jangan izinkan play sebelum lagu & lirik siap
+    if (state.isDemo) return;
     initAudioContext();
 
     if (state.audioElement) {
@@ -117,7 +162,7 @@ function updatePlayButton() {
     playIcon.className = state.isPlaying ? "fas fa-pause" : "fas fa-play";
 }
 
-// Handle Upload JSON Lirik terlebih dahulu
+// Handle Upload JSON Lirik
 btnUploadLyrics.addEventListener('click', () => lyricsInput.click());
 lyricsInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -127,11 +172,8 @@ lyricsInput.addEventListener('change', (e) => {
     reader.onload = function(event) {
         try {
             const jsonContent = JSON.parse(event.target.result);
-            // Validasi format struktur: json.lyrics
             if (jsonContent && Array.isArray(jsonContent.lyrics)) {
                 state.lyricsData = jsonContent.lyrics;
-                
-                // Aktifkan tombol upload audio setelah lirik berhasil dimuat
                 btnUploadAudio.disabled = false;
                 trackTitle.textContent = "Silakan Unggah Lagu MP3";
                 state.text = "Lirik Siap, Silakan Unggah MP3";
@@ -146,7 +188,7 @@ lyricsInput.addEventListener('change', (e) => {
     reader.readAsText(file);
 });
 
-// Handle Upload MP3 (hanya bisa diklik jika lirik sudah ada)
+// Handle Upload MP3
 btnUploadAudio.addEventListener('click', () => {
     if (!btnUploadAudio.disabled) audioInput.click();
 });
@@ -164,7 +206,14 @@ audioInput.addEventListener('change', (e) => {
     if (state.audioSource) state.audioSource.disconnect();
 
     state.audioSource = state.audioCtx.createMediaElementSource(state.audioElement);
-    state.audioSource.connect(state.analyser);
+    
+    // Sambungkan audio node melalui rantai Equalizer filters -> Analyser -> Destination
+    let lastNode = state.audioSource;
+    state.eqFilters.forEach(filter => {
+        lastNode.connect(filter);
+        lastNode = filter;
+    });
+    lastNode.connect(state.analyser);
     state.analyser.connect(state.audioCtx.destination);
 
     state.isDemo = false;
@@ -180,7 +229,6 @@ audioInput.addEventListener('change', (e) => {
     };
 });
 
-// Sinkronisasi lirik berdasarkan waktu musik (milidetik)
 function updateActiveLyrics() {
     if (state.isDemo || !state.audioElement || state.lyricsData.length === 0) return;
 
@@ -283,6 +331,9 @@ function drawVisualizer() {
             ctx.translate(charCenterX, centerY + waveOffset);
             ctx.shadowColor = color;
             ctx.shadowBlur = 15 + (audioVal / 255) * 20;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+            ctx.strokeText(char, 0, 0);
             ctx.fillStyle = color;
             ctx.fillText(char, 0, 0);
             ctx.restore();
@@ -315,7 +366,12 @@ function drawVisualizer() {
             ctx.save();
             ctx.fillStyle = '#ffffff';
             ctx.shadowColor = 'rgba(255,255,255,0.8)';
-            ctx.shadowBlur = 10;
+
+            ctx.shadowBlur = 15 + (audioVal / 255) * 20;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+            ctx.strokeText(char, 0, 0);
+
             ctx.fillText(char, charCenterX, centerY);
             ctx.restore();
 
@@ -361,7 +417,12 @@ function drawVisualizer() {
             ctx.scale(scale, scale);
             ctx.fillStyle = color;
             ctx.shadowColor = color;
-            ctx.shadowBlur = 15;
+
+            ctx.shadowBlur = 15 + (audioVal / 255) * 20;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+            ctx.strokeText(char, 0, 0);
+
             ctx.fillText(char, 0, 0);
             ctx.restore();
 
