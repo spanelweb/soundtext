@@ -12,7 +12,7 @@ const state = {
     isDemo: true,
     
     // Settings Parameters
-    text: "Silakan Unggah JSON Lirik",
+    text: "Memuat Demo...",
     lyricsData: [],
     colorMode: "gradient",
     solidColor: "#45f3ff",
@@ -142,14 +142,66 @@ function initAudioContext() {
     }
 }
 
-btnPlayPause.addEventListener('click', () => {
-    if (state.isDemo) return;
+// Load Demo Assets (demo_audio.mp3 & demo_lyrics.json) automatically on start
+async function loadDemoAssets() {
+    try {
+        // Load JSON Lyrics
+        const lyricsResponse = await fetch('demo_lyrics.json');
+        if (lyricsResponse.ok) {
+            const jsonContent = await lyricsResponse.json();
+            if (jsonContent && Array.isArray(jsonContent.lyrics)) {
+                state.lyricsData = jsonContent.lyrics;
+            }
+        }
+    } catch (err) {
+        console.warn("Gagal memuat demo_lyrics.json secara otomatis:", err);
+    }
+
+    try {
+        // Load Audio MP3
+        initAudioContext();
+        state.audioElement = new Audio('demo_audio.mp3');
+        state.audioElement.crossOrigin = "anonymous";
+
+        state.audioSource = state.audioCtx.createMediaElementSource(state.audioElement);
+        
+        let lastNode = state.audioSource;
+        state.eqFilters.forEach(filter => {
+            lastNode.connect(filter);
+            lastNode = filter;
+        });
+        lastNode.connect(state.analyser);
+        state.analyser.connect(state.audioCtx.destination);
+
+        trackTitle.textContent = "Demo Track (demo_audio.mp3)";
+        state.text = state.lyricsData.length > 0 ? "Tekan Play untuk Mulai" : "Silakan Unggah JSON Lirik";
+        btnUploadAudio.disabled = false;
+
+        state.audioElement.onended = () => {
+            state.isPlaying = false;
+            updatePlayButton();
+        };
+    } catch (err) {
+        console.warn("Gagal memuat demo_audio.mp3 secara otomatis:", err);
+        state.text = "Silakan Unggah JSON & MP3";
+    }
+}
+
+// Panggil fungsi load demo saat script dijalankan
+loadDemoAssets();
+
+btnPlayPause.addEventListener('click', async () => {
     initAudioContext();
 
     if (state.audioElement) {
         if (state.audioElement.paused) {
-            state.audioElement.play();
-            state.isPlaying = true;
+            try {
+                await state.audioElement.play();
+                state.isPlaying = true;
+                state.isDemo = false;
+            } catch (err) {
+                console.error("Gagal memutar audio:", err);
+            }
         } else {
             state.audioElement.pause();
             state.isPlaying = false;
@@ -207,7 +259,6 @@ audioInput.addEventListener('change', (e) => {
 
     state.audioSource = state.audioCtx.createMediaElementSource(state.audioElement);
     
-    // Sambungkan audio node melalui rantai Equalizer filters -> Analyser -> Destination
     let lastNode = state.audioSource;
     state.eqFilters.forEach(filter => {
         lastNode.connect(filter);
@@ -230,7 +281,7 @@ audioInput.addEventListener('change', (e) => {
 });
 
 function updateActiveLyrics() {
-    if (state.isDemo || !state.audioElement || state.lyricsData.length === 0) return;
+    if (!state.audioElement || state.lyricsData.length === 0) return;
 
     const currentTimeMs = state.audioElement.currentTime * 1000;
     let currentLine = "";
