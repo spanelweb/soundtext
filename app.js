@@ -393,42 +393,42 @@ function drawVisualizer() {
         });
     }
     else if (state.visualStyle === 'textBars') {
-        let currentX = startX;
-        characters.forEach((char, i) => {
-            const charW = charWidths[i];
-            const charCenterX = currentX + charW / 2;
+                let currentX = startX;
+                characters.forEach((char, i) => {
+                    const charW = charWidths[i];
+                    const charCenterX = currentX + charW / 2;
 
-            const freqIndex = Math.floor((i / Math.max(1, numChars)) * (state.bufferLength / 1.5));
-            const audioVal = state.dataArray[freqIndex] || 0;
-            const barHeight = (audioVal / 255) * 120 * state.sensitivity;
+                    const freqIndex = Math.floor((i / Math.max(1, numChars)) * (state.bufferLength / 1.5));
+                    const audioVal = state.dataArray[freqIndex] || 0;
+                    const barHeight = (audioVal / 255) * 120 * state.sensitivity;
 
-            const color = getStyleColor(i, numChars, renderTime);
+                    const color = getStyleColor(i, numChars, renderTime);
 
-            ctx.save();
-            ctx.fillStyle = color;
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 10;
-            
-            const barWidth = Math.max(3, charW * 0.4);
-            ctx.fillRect(charCenterX - barWidth / 2, centerY - baseFontSize/2 - barHeight, barWidth, barHeight);
-            ctx.fillRect(charCenterX - barWidth / 2, centerY + baseFontSize/2, barWidth, barHeight);
-            ctx.restore();
+                    ctx.save();
+                    ctx.fillStyle = color;
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 10;
+                    
+                    const barWidth = Math.max(3, charW * 0.4);
+                    ctx.fillRect(charCenterX - barWidth / 2, centerY - baseFontSize/2 - barHeight, barWidth, barHeight);
+                    ctx.fillRect(charCenterX - barWidth / 2, centerY + baseFontSize/2, barWidth, barHeight);
+                    ctx.restore();
 
-            ctx.save();
-            ctx.fillStyle = '#ffffff';
-            ctx.shadowColor = 'rgba(255,255,255,0.8)';
+                    ctx.save();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowColor = 'rgba(255,255,255,0.8)';
 
-            ctx.shadowBlur = 15 + (audioVal / 255) * 20;
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#000000';
+                    ctx.shadowBlur = 15 + (audioVal / 255) * 20;
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#000000';
             ctx.strokeText(char, 0, 0);
 
-            ctx.fillText(char, charCenterX, centerY);
-            ctx.restore();
+                    ctx.fillText(char, charCenterX, centerY);
+                    ctx.restore();
 
-            currentX += charW;
-        });
-    }
+                    currentX += charW;
+                });
+            }
     else if (state.visualStyle === 'hybrid') {
         ctx.save();
         ctx.beginPath();
