@@ -328,6 +328,33 @@ function getStyleColor(index, total, time) {
 
 let renderTime = 0;
 
+// State helper untuk Matrix Rain & Particles
+let matrixDrops = [];
+let audioParticles = [];
+
+function initExtraVisuals() {
+    // Inisialisasi kolom Matrix Rain
+    const columns = Math.floor(window.innerWidth / 20);
+    matrixDrops = [];
+    for (let i = 0; i < columns; i++) {
+        matrixDrops[i] = Math.floor(Math.random() * -50);
+    }
+
+    // Inisialisasi Partikel
+    audioParticles = [];
+    for (let i = 0; i < 60; i++) {
+        audioParticles.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            size: Math.random() * 3 + 1,
+            speedY: Math.random() * 2 + 0.5,
+            angle: Math.random() * Math.PI * 2
+        });
+    }
+}
+initExtraVisuals();
+window.addEventListener('resize', initExtraVisuals);
+
 function drawVisualizer() {
     requestAnimationFrame(drawVisualizer);
 
@@ -341,6 +368,7 @@ function drawVisualizer() {
         state.analyser.getByteFrequencyData(state.dataArray);
     }
 
+    // Background trail effect
     ctx.fillStyle = 'rgba(11, 12, 16, 0.25)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -364,6 +392,9 @@ function drawVisualizer() {
 
     let startX = centerX - (totalTextWidth / 2);
 
+    // ==========================================
+    // 1. TEXT WAVE
+    // ==========================================
     if (state.visualStyle === 'textWave') {
         let currentX = startX;
         characters.forEach((char, i) => {
@@ -392,6 +423,9 @@ function drawVisualizer() {
             currentX += charW;
         });
     }
+    // ==========================================
+    // 2. TEXT BARS
+    // ==========================================
     else if (state.visualStyle === 'textBars') {
         let currentX = startX;
         characters.forEach((char, i) => {
@@ -424,6 +458,9 @@ function drawVisualizer() {
             currentX += charW;
         });
     }
+    // ==========================================
+    // 3. HYBRID (WAVEFRONT & TEXT)
+    // ==========================================
     else if (state.visualStyle === 'hybrid') {
         ctx.save();
         ctx.beginPath();
@@ -463,13 +500,159 @@ function drawVisualizer() {
             ctx.scale(scale, scale);
             ctx.fillStyle = color;
             ctx.shadowColor = color;
-
             ctx.shadowBlur = 15 + (audioVal / 255) * 20;
             ctx.lineWidth = 2;
             ctx.strokeStyle = '#000000';
             ctx.strokeText(char, 0, 0);
-
             ctx.fillText(char, 0, 0);
+            ctx.restore();
+
+            currentX += charW;
+        });
+    }
+    // ==========================================
+    // 4. CIRCLE BARS (Lingkaran Spektrum Radial)
+    // ==========================================
+    else if (state.visualStyle === 'circleBars') {
+        ctx.save();
+        const radius = Math.min(canvas.width, canvas.height) * 0.22;
+        const barsCount = Math.min(64, state.bufferLength);
+        const angleStep = (Math.PI * 2) / barsCount;
+
+        for (let i = 0; i < barsCount; i++) {
+            const audioVal = state.dataArray[i] || 0;
+            const barLen = (audioVal / 255) * 120 * state.sensitivity;
+            const angle = i * angleStep;
+
+            const x1 = centerX + Math.cos(angle) * radius;
+            const y1 = centerY + Math.sin(angle) * radius;
+            const x2 = centerX + Math.cos(angle) * (radius + barLen);
+            const y2 = centerY + Math.sin(angle) * (radius + barLen);
+
+            const color = getStyleColor(i, barsCount, renderTime);
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 12;
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+        ctx.restore();
+
+        // Tampilkan Teks di Tengah Lingkaran
+        let currentX = startX;
+        characters.forEach((char, i) => {
+            const charW = charWidths[i];
+            const charCenterX = currentX + charW / 2;
+            const color = getStyleColor(i, numChars, renderTime);
+
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+            ctx.strokeText(char, charCenterX, centerY);
+            ctx.fillText(char, charCenterX, centerY);
+            ctx.restore();
+
+            currentX += charW;
+        });
+    }
+    // ==========================================
+    // 5. MATRIX RAIN (Hujan Digital Audio)
+    // ==========================================
+    else if (state.visualStyle === 'matrixRain') {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 255, 100, 0.8)';
+        ctx.font = '14px monospace';
+
+        matrixDrops.forEach((y, i) => {
+            const char = String.fromCharCode(0x30A0 + Math.random() * 96);
+            const x = i * 20;
+            const color = getStyleColor(i, matrixDrops.length, renderTime);
+
+            ctx.fillStyle = color;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 8;
+            ctx.fillText(char, x, y * 20);
+
+            if (y * 20 > canvas.height && Math.random() > 0.975) {
+                matrixDrops[i] = 0;
+            }
+            matrixDrops[i] += state.speed;
+        });
+        ctx.restore();
+
+        // Teks Lirik Utama Berdenyut di Atas Matriks
+        let currentX = startX;
+        characters.forEach((char, i) => {
+            const charW = charWidths[i];
+            const charCenterX = currentX + charW / 2;
+            const freqIndex = Math.floor((i / Math.max(1, numChars)) * (state.bufferLength / 2));
+            const audioVal = state.dataArray[freqIndex] || 0;
+            const scale = 1 + (audioVal / 255) * 0.25 * state.sensitivity;
+            const color = getStyleColor(i, numChars, renderTime);
+
+            ctx.save();
+            ctx.translate(charCenterX, centerY);
+            ctx.scale(scale, scale);
+            ctx.fillStyle = color;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 20;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+            ctx.strokeText(char, 0, 0);
+            ctx.fillText(char, 0, 0);
+            ctx.restore();
+
+            currentX += charW;
+        });
+    }
+    // ==========================================
+    // 6. PARTICLES (Ledakan Partikel Audio)
+    // ==========================================
+    else if (state.visualStyle === 'particles') {
+        ctx.save();
+        const avgAudio = state.dataArray.reduce((a, b) => a + b, 0) / state.dataArray.length;
+        const pulseFactor = 1 + (avgAudio / 255) * 2 * state.sensitivity;
+
+        audioParticles.forEach((p, i) => {
+            p.y -= p.speedY * pulseFactor * state.speed;
+            if (p.y < 0) p.y = canvas.height;
+
+            const color = getStyleColor(i, audioParticles.length, renderTime);
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * pulseFactor, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+            ctx.fill();
+        });
+        ctx.restore();
+
+        // Teks Utama Berpijar
+        let currentX = startX;
+        characters.forEach((char, i) => {
+            const charW = charWidths[i];
+            const charCenterX = currentX + charW / 2;
+            const freqIndex = Math.floor((i / Math.max(1, numChars)) * (state.bufferLength / 2));
+            const audioVal = state.dataArray[freqIndex] || 0;
+            const color = getStyleColor(i, numChars, renderTime);
+
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 25 + (audioVal / 255) * 20;
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+            ctx.strokeText(char, charCenterX, centerY);
+            ctx.fillText(char, charCenterX, centerY);
             ctx.restore();
 
             currentX += charW;
